@@ -1,0 +1,13 @@
+header{
+    background-color: #efefef;
+  display: flex;
+  height: 90px;
+  align-content: center;
+  align-items: center;
+  justify-content: space-around;
+}
+.titre-header{
+    color: black;
+    font-size: 30px;
+    margin-left: -3%;
+}

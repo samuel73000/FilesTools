@@ -17,7 +17,6 @@ export default function Home() {
       </p>
       </div>
       <div className='container-all-outils-home'>
-        <div className='container-outils'>
           <div className='container-outil'>
             <svg
               xmlns='http://www.w3.org/2000/svg'
@@ -753,7 +752,6 @@ export default function Home() {
             </p>
           </div>
         </div>
-      </div>
     </section>
   );
 }

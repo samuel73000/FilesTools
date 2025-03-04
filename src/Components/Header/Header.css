@@ -1,10 +1,28 @@
 header{
     background-color: #efefef;
+    display: flex;
+    height: 90px;
+    width: 100%;
+    display: flex;
+  align-content: center;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-container{
+    background-color: #efefef;
   display: flex;
-  height: 90px;
   align-content: center;
   align-items: center;
   justify-content: space-around;
+  width: 60%;
+  margin-left: 2%;
+}
+.btn-container-header{
+    display: flex;
+    justify-content: space-around;
+    width: 15%;
+    margin-right: 1%;
 }
 .titre-header{
     color: black;

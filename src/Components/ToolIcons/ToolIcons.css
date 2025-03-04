@@ -1,0 +1,20 @@
+.container-ToolIcons {
+    text-align: center;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: white;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+  }
+  .container-ToolIcons:hover{
+    transform: scale(1.02);
+  }
+  .titre-ToolIcons {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  .texte-ToolIcons {
+    font-size: 14px;
+    color:black;
+  }
+  

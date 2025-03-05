@@ -1,4 +1,5 @@
 import "./ToolIcons.css";
+import Link from "next/link";
 
 const ToolIcons = () => {
   const SVG = [
@@ -591,11 +592,15 @@ const ToolIcons = () => {
   ];
 
   return SVG.map((svg, index) => (
-    <div className='container-ToolIcons'>
-      {SVG[index]}
-      <p className='titre-ToolIcons'>{titre[index]}</p>
-      <p className='texte-ToolIcons'>{texte[index]}</p>
-    </div>
+    <Link
+      href={`/Tools/${titre[index].replace(/ /g, "")}`}
+      key={index}>
+      <div className='container-ToolIcons'>
+        {SVG[index]}
+        <p className='titre-ToolIcons'>{titre[index]}</p>
+        <p className='texte-ToolIcons'>{texte[index]}</p>
+      </div>
+    </Link>
   ));
 };
 export default ToolIcons;

@@ -1,16 +1,17 @@
 .section-home{
-   padding: 20px;
+   padding: 0px 60px 0px 60px;
   background-image: url('../Assets/background.svg');
+  margin-bottom: 20px;
 }
 .container-titre-home {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;  
-    margin-bottom: 20px;
     width: 100%;  
     margin-left: auto;  
     margin-right: auto; 
+    margin-bottom: 30px;
   }
   
 .titre-home{
@@ -32,8 +33,8 @@
 
 .container-all-outils-home {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(15%, 1fr));
+    gap: 9px;
     text-align: center;
     cursor: pointer;
   }

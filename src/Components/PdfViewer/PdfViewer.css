@@ -1,0 +1,31 @@
+.container-canvas {
+  padding: 15px;
+  background-color: rgb(242, 242, 242);
+  border-radius: 5px;
+}
+
+.pdf-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.pdf-controls button {
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  border-radius: 5px;
+  background-color: #007bff;
+  border: 0;
+  color: white;
+}
+
+.pdf-controls span {
+  font-size: 0.7rem;
+}
+
+.pdf-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

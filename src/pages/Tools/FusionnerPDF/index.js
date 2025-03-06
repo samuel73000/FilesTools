@@ -6,6 +6,7 @@ export default function FusionnerPDF() {
   const fileInputRef = useRef(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [pdfUrls, setPdfUrls] = useState([]);
+  const [mergedPdfUrl, setMergedPdfUrl] = useState(null);
 
   /**
    * Déclenche le clic sur l'input file caché lorsque le bouton est cliqué
@@ -73,6 +74,38 @@ export default function FusionnerPDF() {
     };
   }, [pdfUrls]);
 
+  const handleMerge = async () => {
+    if (selectedFiles.length < 2) {
+      alert("Veuillez sélectionner au moins deux fichiers PDF.");
+      return;
+    }
+
+    const filePromises = selectedFiles.map(
+      (file) =>
+        new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result.split(",")[1]); // Récupérer la base64
+          reader.readAsDataURL(file);
+        })
+    );
+
+    const filesBase64 = await Promise.all(filePromises);
+
+    const response = await fetch("/api/merge", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ files: filesBase64 }),
+    });
+
+    if (!response.ok) {
+      alert("Erreur lors de la fusion des fichiers.");
+      return;
+    }
+
+    const blob = await response.blob();
+    setMergedPdfUrl(URL.createObjectURL(blob));
+  };
+
   return (
     <section
       className='section-fusionnerPDF'
@@ -102,19 +135,33 @@ export default function FusionnerPDF() {
         </>
       ) : (
         <section>
-          <div className="container-fusionnerPDF-pdf-viewer">
-          {pdfUrls.map((url, index) => (
-            <div key={index}>
-              <PdfViewer url={url} width={200} height={300} />
-              <p className='texte-fusionnerPDF-pdf-viewer'>
-                {selectedFiles[index].name}
-              </p>
+          <div className='container-fusionnerPDF-pdf-viewer'>
+            {pdfUrls.map((url, index) => (
+              <div key={index}>
+                <PdfViewer url={url} width={200} height={300} />
+                <p className='texte-fusionnerPDF-pdf-viewer'>
+                  {selectedFiles[index].name}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {mergedPdfUrl ? (
+            <div style={{ marginTop: "50px" }}>
+              <a
+                href={mergedPdfUrl}
+                download='FileTransfomer-Merged.pdf'
+                className='bouton-fusionnerPDF'>
+                Télécharger le PDF fusionné
+              </a>
             </div>
-          ))}
-          </div>
-          <div>
-          <button className="bouton-fusionnerPDF ">Fusionner PDF</button>
-          </div>
+          ) : (
+            <div>
+              <button onClick={handleMerge} className='bouton-fusionnerPDF'>
+                Fusionner PDF
+              </button>
+            </div>
+          )}
         </section>
       )}
     </section>

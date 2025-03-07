@@ -6,8 +6,8 @@ export default function DiviserPDF() {
   const fileInputRef = useRef(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [pdfUrls, setPdfUrls] = useState([]);
-  const [mergedPdfUrl, setMergedPdfUrl] = useState(null);
-
+  const [splitFiles, setSplitFiles] = useState([]);
+  const [file, setFile] = useState(null);
   /**
    * Déclenche le clic sur l'input file caché lorsque le bouton est cliqué
    */
@@ -21,14 +21,13 @@ export default function DiviserPDF() {
   const handleFileChange = (event) => {
     const files = event.target.files;
     if (files.length > 0) {
-      setSelectedFiles(Array.from(files));
-      // Créer les URLs pour tous les fichiers PDF
-      const urls = Array.from(files).map((file) => URL.createObjectURL(file));
-      setPdfUrls(urls);
-      console.log(
-        "Fichiers sélectionnés :",
-        Array.from(files).map((file) => file.name)
-      );
+      const file = files[0];
+      setSelectedFiles([file]);
+      // Créer l'URL pour le fichier PDF
+      const url = URL.createObjectURL(file);
+      setPdfUrls([url]);
+      console.log("Fichier sélectionné :", file.name);
+      setFile(file);
     }
   };
 
@@ -53,17 +52,17 @@ export default function DiviserPDF() {
     );
 
     if (files.length > 0) {
-      setSelectedFiles(files);
-      // Créer les URLs pour tous les fichiers PDF
-      const urls = files.map((file) => URL.createObjectURL(file));
-      setPdfUrls(urls);
-      console.log(
-        "Fichiers déposés :",
-        files.map((file) => file.name)
-      );
+      // Modifier ici pour ne prendre que le premier fichier
+      const file = files[0];
+      setSelectedFiles([file]);
+      // Créer l'URL pour le fichier PDF
+      const url = URL.createObjectURL(file);
+      setPdfUrls([url]);
+      console.log("Fichier déposé :", file.name);
       const dataTransfer = new DataTransfer();
-      files.forEach((file) => dataTransfer.items.add(file));
+      dataTransfer.items.add(file);
       fileInputRef.current.files = dataTransfer.files;
+      setFile(file);
     }
   };
 
@@ -74,36 +73,36 @@ export default function DiviserPDF() {
     };
   }, [pdfUrls]);
 
-  const handleMerge = async () => {
-    if (selectedFiles.length < 2) {
-      alert("Veuillez sélectionner au moins deux fichiers PDF.");
+  const handleSplit = async () => {
+    if (!file) {
+      alert("Veuillez sélectionner un fichier PDF.");
       return;
     }
 
-    const filePromises = selectedFiles.map(
-      (file) =>
-        new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result.split(",")[1]); // Récupérer la base64
-          reader.readAsDataURL(file);
-        })
-    );
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64File = e.target.result.split(",")[1]; // Extraire le contenu Base64
 
-    const filesBase64 = await Promise.all(filePromises);
+      const response = await fetch("/api/split", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file: base64File }),
+      });
 
-    const response = await fetch("/api/merge", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ files: filesBase64 }),
-    });
+      if (!response.ok) {
+        alert("Erreur lors de la division du fichier.");
+        return;
+      }
 
-    if (!response.ok) {
-      alert("Erreur lors de la fusion des fichiers.");
-      return;
-    }
+      const data = await response.json();
+      setSplitFiles(data.files);
+    };
 
-    const blob = await response.blob();
-    setMergedPdfUrl(URL.createObjectURL(blob));
+    reader.onerror = () => {
+      alert("Erreur lors de la lecture du fichier.");
+    };
+
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -115,10 +114,11 @@ export default function DiviserPDF() {
         <>
           <h2 className='titre-fusionnerPDF'>Diviser le fichier PDF</h2>
           <p className='texte-fusionnerPDF'>
-          Sélectionner la portée de pages, séparer une page, ou convertir chaque page du document en fichier PDF indépendant.
+            Sélectionner la portée de pages, séparer une page, ou convertir
+            chaque page du document en fichier PDF indépendant.
           </p>
           <button className='bouton-fusionnerPDF' onClick={handleClick}>
-          Sélectionner le fichier PDF
+            Sélectionner le fichier PDF
           </button>
           <input
             type='file'
@@ -128,9 +128,7 @@ export default function DiviserPDF() {
             multiple
             style={{ display: "none" }}
           />
-          <p className='texte-2-fusionnerPDF'>
-          ou déposer le PDF ici
-          </p>
+          <p className='texte-2-fusionnerPDF'>ou déposer le PDF ici</p>
         </>
       ) : (
         <section>
@@ -144,18 +142,22 @@ export default function DiviserPDF() {
               </div>
             ))}
           </div>
-          {mergedPdfUrl ? (
+          {splitFiles.length > 0 ? (
             <div style={{ marginTop: "50px" }}>
-              <a
-                href={mergedPdfUrl}
-                download='FileTransfomer-Merged.pdf'
-                className='bouton-fusionnerPDF'>
-                Télécharger le PDF fusionné
-              </a>
+              {splitFiles.map((pdfBase64, index) => (
+                <a
+                className='bouton-fusionnerPDF'
+                  key={index}
+                  href={`data:application/pdf;base64,${pdfBase64}`}
+                  download={`page-${index + 1}.pdf`}
+                  style={{ display: "block", marginTop: "5px" }}>
+                  Télécharger page {index + 1}
+                </a>
+              ))}
             </div>
           ) : (
             <div>
-              <button onClick={handleMerge} className='bouton-fusionnerPDF'>
+              <button onClick={handleSplit} className='bouton-fusionnerPDF'>
                 Diviser PDF
               </button>
             </div>

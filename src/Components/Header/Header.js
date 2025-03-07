@@ -1,17 +1,20 @@
 import "./Header.css";
 import Link from "next/link";
 
+
 const Header = () => {
   return (
     <header>
       <div className='header-container'>
         <Link href={"/"}>
-          <h1 className='titre-header'>FileTransformer</h1>
+          <h1 className='titre-header'>FilesTools</h1>
         </Link>
         <Link href={"/Tools/FusionnerPDF"}>
-        <p className='texte-header'>Fusionner PDF</p>
+          <p className='texte-header'>Fusionner PDF</p>
         </Link>
-        <p className='texte-header'>Diviser PDF</p>
+        <Link href={"/Tools/DiviserPDF"}>
+          <p className='texte-header'>Diviser PDF</p>
+        </Link>
         <p className='texte-header'>Compresser PDF</p>
         <p className='texte-header'>Convertire PDF</p>
         <p className='texte-header'>Touts les outils PDF</p>

@@ -1,8 +1,10 @@
 import "./Header.css";
 import Link from "next/link";
-
+import { useRouter } from "next/router";
 
 const Header = () => {
+  const router = useRouter();
+
   return (
     <header>
       <div className='header-container'>
@@ -10,10 +12,20 @@ const Header = () => {
           <h1 className='titre-header'>FilesTools</h1>
         </Link>
         <Link href={"/Tools/FusionnerPDF"}>
-          <p className='texte-header'>Fusionner PDF</p>
+          <p
+            className={`texte-header ${
+              router.pathname === "/Tools/FusionnerPDF" ? "active" : ""
+            }`}>
+            Fusionner PDF
+          </p>
         </Link>
         <Link href={"/Tools/DiviserPDF"}>
-          <p className='texte-header'>Diviser PDF</p>
+          <p
+            className={`texte-header ${
+              router.pathname === "/Tools/DiviserPDF" ? "active" : ""
+            }`}>
+            Diviser PDF
+          </p>
         </Link>
         <p className='texte-header'>Compresser PDF</p>
         <p className='texte-header'>Convertire PDF</p>

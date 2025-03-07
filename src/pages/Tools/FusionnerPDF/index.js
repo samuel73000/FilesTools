@@ -1,5 +1,8 @@
 import { useCallback, useRef, useState, useEffect } from "react";
 import PdfViewer from "../../../Components/PdfViewer/PdfViewer";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHand, faTimes } from "@fortawesome/free-solid-svg-icons";
+
 import "./FusionnerPDF.css";
 import {
   DndContext,
@@ -28,7 +31,10 @@ function SortableItem(props) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style}>
+      <div className='drag-handle' {...attributes} {...listeners}>
+        <FontAwesomeIcon icon={faHand} className='icon-fusionner-grab' />
+      </div>
       {props.children}
     </div>
   );
@@ -169,6 +175,23 @@ export default function FusionnerPDF() {
     })
   );
 
+  /**
+   * Supprime un fichier de la liste des fichiers sélectionnés
+   * @param {string} fileName
+   */
+  const handleRemoveFile = (fileName) => {
+    setSelectedFiles((prevFiles) => {
+      const newFiles = prevFiles.filter((file) => file.name !== fileName);
+      return newFiles;
+    });
+
+    setPdfUrls((prevUrls) => {
+      return prevUrls.filter((url, index) => {
+        return selectedFiles[index].name !== fileName;
+      });
+    });
+  };
+
   return (
     <section
       className='section-fusionnerPDF'
@@ -212,12 +235,25 @@ export default function FusionnerPDF() {
                 {isMounted &&
                   selectedFiles.map((file, index) => (
                     <SortableItem key={file.name} id={file.name}>
-                      <PdfViewer
-                        url={pdfUrls[index]}
-                        width={200}
-                        height={300}
-                      />
-                      <p className='texte-fusionnerPDF-pdf-viewer'>
+                      <div style={{ position: "relative" }}>
+                        <PdfViewer
+                          url={pdfUrls[index]}
+                          width={200}
+                          height={300}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <FontAwesomeIcon
+                          icon={faTimes}
+                          className='icon-fusionner-croix'
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveFile(file.name);
+                          }}
+                        />
+                      </div>
+                      <p
+                        className='texte-fusionnerPDF-pdf-viewer'
+                        onClick={(e) => e.stopPropagation()}>
                         {file.name}
                       </p>
                     </SortableItem>

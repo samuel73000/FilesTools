@@ -57,8 +57,8 @@
   max-height: 100%;
   padding-left: 50px;
   padding-right: 50px;
+  padding-top: 30px;
   margin: 0 auto;
-  margin-top: 30px;
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
@@ -67,4 +67,38 @@
   font-size: 15px;
   max-width: 230px;
   margin-top: 7px;
+}
+
+.drag-handle {
+  cursor: grab;
+  padding: 0px;
+  border-radius: 50%;
+  background-color: #007bff;
+  width: 30px;
+  height: 30px;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  position: absolute;
+  margin-top: -15px;
+  z-index: 1;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.icon-fusionner-grab{
+  color: white;
+  font-size: 20px;
+}
+
+.icon-fusionner-croix{
+  width: 30px;
+  height: 30px;
+  background-color: #007bff;
+  color: white;
+  font-size: 15px;
+  border-radius: 50%;
+  position: absolute;
+  right: 1px;
+  top: -15px;
 }

@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect } from "react";
 import PdfViewer from "../../../Components/PdfViewer/PdfViewer";
 import "./DiviserPDF.css";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 export default function DiviserPDF() {
   const fileInputRef = useRef(null);
@@ -105,6 +107,17 @@ export default function DiviserPDF() {
     reader.readAsDataURL(file);
   };
 
+  const handleDownloadAll = () => {
+    const zip = new JSZip();
+    splitFiles.forEach((pdfBase64, index) => {
+      zip.file(`page-${index + 1}.pdf`, pdfBase64, { base64: true });
+    });
+
+    zip.generateAsync({ type: "blob" }).then((blob) => {
+      saveAs(blob, "FilsTools-divises.zip");
+    });
+  };
+
   return (
     <section
       className='section-fusionnerPDF'
@@ -135,7 +148,11 @@ export default function DiviserPDF() {
           <div className='container-fusionnerPDF-pdf-viewer'>
             {pdfUrls.map((url, index) => (
               <div key={index}>
-                <PdfViewer url={url} width={200} height={300} />
+                <PdfViewer
+                  url={url}
+                  width={200}
+                  height={300}
+                />
                 <p className='texte-fusionnerPDF-pdf-viewer'>
                   {selectedFiles[index].name}
                 </p>
@@ -144,16 +161,11 @@ export default function DiviserPDF() {
           </div>
           {splitFiles.length > 0 ? (
             <div style={{ marginTop: "50px" }}>
-              {splitFiles.map((pdfBase64, index) => (
-                <a
-                className='bouton-fusionnerPDF'
-                  key={index}
-                  href={`data:application/pdf;base64,${pdfBase64}`}
-                  download={`page-${index + 1}.pdf`}
-                  style={{ display: "block", marginTop: "5px" }}>
-                  Télécharger page {index + 1}
-                </a>
-              ))}
+              <button
+                onClick={handleDownloadAll}
+                className='bouton-fusionnerPDF'>
+                Télécharger le PDF divisés
+              </button>
             </div>
           ) : (
             <div>

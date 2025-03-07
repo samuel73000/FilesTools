@@ -1,12 +1,45 @@
 import { useRef, useState, useEffect } from "react";
 import PdfViewer from "../../../Components/PdfViewer/PdfViewer";
 import "./FusionnerPDF.css";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  arrayMove,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+function SortableItem(props) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: props.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    marginRight: "8px",
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {props.children}
+    </div>
+  );
+}
 
 export default function FusionnerPDF() {
   const fileInputRef = useRef(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [pdfUrls, setPdfUrls] = useState([]);
   const [mergedPdfUrl, setMergedPdfUrl] = useState(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   /**
    * Déclenche le clic sur l'input file caché lorsque le bouton est cliqué
@@ -68,9 +101,10 @@ export default function FusionnerPDF() {
   };
 
   useEffect(() => {
+    setIsMounted(true);
     return () => {
-      // Nettoyer toutes les URLs lors du démontage
       pdfUrls.forEach((url) => URL.revokeObjectURL(url));
+      setIsMounted(false);
     };
   }, [pdfUrls]);
 
@@ -80,6 +114,7 @@ export default function FusionnerPDF() {
       return;
     }
 
+    // Utiliser l'ordre actuel des fichiers sélectionnés
     const filePromises = selectedFiles.map(
       (file) =>
         new Promise((resolve) => {
@@ -105,6 +140,33 @@ export default function FusionnerPDF() {
     const blob = await response.blob();
     setMergedPdfUrl(URL.createObjectURL(blob));
   };
+
+  // Fonction pour gérer le déplacement des éléments
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setSelectedFiles((items) => {
+        const oldIndex = items.findIndex((file) => file.name === active.id);
+        const newIndex = items.findIndex((file) => file.name === over.id);
+        const newItems = arrayMove(items, oldIndex, newIndex);
+
+        // Mettre à jour les URLs pour correspondre au nouvel ordre des fichiers
+        const newUrls = newItems.map((file) => URL.createObjectURL(file));
+        // Révoquer les anciennes URLs
+        pdfUrls.forEach((url) => URL.revokeObjectURL(url));
+        setPdfUrls(newUrls);
+        return newItems;
+      });
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   return (
     <section
@@ -135,16 +197,33 @@ export default function FusionnerPDF() {
         </>
       ) : (
         <section>
-          <div className='container-fusionnerPDF-pdf-viewer'>
-            {pdfUrls.map((url, index) => (
-              <div key={index}>
-                <PdfViewer url={url} width={200} height={300} />
-                <p className='texte-fusionnerPDF-pdf-viewer'>
-                  {selectedFiles[index].name}
-                </p>
+          <p>
+            Pour modifier l'ordre de vos fichiers PDF, glissez-déposez les
+            fichiers comme bon vous semble.
+          </p>
+          <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+            <SortableContext
+              items={selectedFiles.map((file) => file.name)}
+              strategy={rectSortingStrategy}>
+              <div
+                className='container-fusionnerPDF-pdf-viewer'
+                style={{ display: "flex", overflowX: "auto" }}>
+                {isMounted &&
+                  selectedFiles.map((file, index) => (
+                    <SortableItem key={file.name} id={file.name}>
+                      <PdfViewer
+                        url={pdfUrls[index]}
+                        width={200}
+                        height={300}
+                      />
+                      <p className='texte-fusionnerPDF-pdf-viewer'>
+                        {file.name}
+                      </p>
+                    </SortableItem>
+                  ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
 
           {mergedPdfUrl ? (
             <div style={{ marginTop: "50px" }}>

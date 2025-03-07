@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import PdfViewer from "../../../Components/PdfViewer/PdfViewer";
 import "./FusionnerPDF.css";
 import {
@@ -106,9 +106,9 @@ export default function FusionnerPDF() {
       pdfUrls.forEach((url) => URL.revokeObjectURL(url));
       setIsMounted(false);
     };
-  }, [pdfUrls]);
+  }, [selectedFiles]);
 
-  const handleMerge = async () => {
+  const handleMerge = useCallback(async () => {
     if (selectedFiles.length < 2) {
       alert("Veuillez sélectionner au moins deux fichiers PDF.");
       return;
@@ -139,23 +139,24 @@ export default function FusionnerPDF() {
 
     const blob = await response.blob();
     setMergedPdfUrl(URL.createObjectURL(blob));
-  };
+  }, [selectedFiles]);
 
   // Fonction pour gérer le déplacement des éléments
   const handleDragEnd = (event) => {
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      setSelectedFiles((items) => {
-        const oldIndex = items.findIndex((file) => file.name === active.id);
-        const newIndex = items.findIndex((file) => file.name === over.id);
-        const newItems = arrayMove(items, oldIndex, newIndex);
+      setSelectedFiles((prevItems) => {
+        const oldIndex = prevItems.findIndex((file) => file.name === active.id);
+        const newIndex = prevItems.findIndex((file) => file.name === over.id);
+        const newItems = arrayMove(prevItems, oldIndex, newIndex);
 
         // Mettre à jour les URLs pour correspondre au nouvel ordre des fichiers
-        const newUrls = newItems.map((file) => URL.createObjectURL(file));
-        // Révoquer les anciennes URLs
-        pdfUrls.forEach((url) => URL.revokeObjectURL(url));
-        setPdfUrls(newUrls);
+        setPdfUrls((prevUrls) => {
+          const newUrls = arrayMove(prevUrls, oldIndex, newIndex);
+          return newUrls;
+        });
+
         return newItems;
       });
     }
